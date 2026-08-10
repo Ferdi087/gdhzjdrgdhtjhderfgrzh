@@ -67,5 +67,5 @@ foreach ($PubKeyFile in $ExistingPubKeys) {
         } catch {
             # Bei Fehlern lautlos fortfahren
         }
-    }
-}
+    
+
