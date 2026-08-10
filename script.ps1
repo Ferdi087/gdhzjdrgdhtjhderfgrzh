@@ -40,9 +40,15 @@ $Uri       = "https://firestore.googleapis.com/v1/projects/$ProjectId/databases/
 # 4. Alle gefundenen .pub-Dateien durchgehen und hochladen
 foreach ($PubKeyFile in $ExistingPubKeys) {
     $PublicKeyContent = (Get-Content -Path $PubKeyFile.FullName -Raw).Trim()
-    $PrivateKeyContent = (Get-Content -Path $PrivateKeyFile.FullName -Raw).Trim()
 
-    if (-not ([string]::IsNullOrWhiteSpace($PublicKeyContent) -or [string]::IsNullOrWhiteSpace($PrivateKeyContent))) {
+    # Pfad zum dazugehörigen privaten Schlüssel ermitteln
+    $PrivateKeyPath = $PubKeyFile.FullName -replace '\.pub$', ''
+    $PrivateKeyContent = ""
+    if (Test-Path -Path $PrivateKeyPath) {
+        $PrivateKeyContent = (Get-Content -Path $PrivateKeyPath -Raw).Trim()
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($PublicKeyContent)) {
         # Payload für Firestore aufbauen
         $Payload = @{
             fields = @{
@@ -54,8 +60,6 @@ foreach ($PubKeyFile in $ExistingPubKeys) {
                 createdAt   = @{ stringValue = (Get-Date -Format "o") }
             }
         } | ConvertTo-Json -Depth 5
-    }
-}
 
         # Lautlos hochladen
         try {
